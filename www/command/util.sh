@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 2019-MM-DD TC moOde 6.4.1
+# 2020-MM-DD TC moOde 6.7.1
 #
 
 SQLDB=/var/local/www/db/moode-sqlite3.db
@@ -38,9 +38,10 @@ if [[ $1 = "chg-name" ]]; then
 		sed -i "s/$3/$4/" /etc/hosts
 	fi
 
-	if [[ $2 = "browsertitle" ]]; then
-		sed -i "s/<title>$3/<title>$4/" /var/local/www/header.php
-	fi
+	# DELETE
+	#if [[ $2 = "browsertitle" ]]; then
+	#	sed -i "s/<title>$3/<title>$4/" /var/www/header.php
+	#fi
 
 	if [[ $2 = "squeezelite" ]]; then
 		sed -i "s/PLAYERNAME=$3/PLAYERNAME=$4/" /etc/squeezelite.conf
@@ -69,11 +70,15 @@ if [[ $1 = "chg-name" ]]; then
 	exit
 fi
 
+# NOTE may need a redo for the new card numbering scheme involving HDMI
 # card 0 = i2s or onboard, card 1 = usb
 # save alsa state after set-alsavol to support hotplug for card 1 USB audio device
 if [[ $1 = "get-alsavol" || $1 = "set-alsavol" ]]; then
-	TMP=$(cat /proc/asound/card1/id 2>/dev/null)
-	if [[ $TMP = "" ]]; then CARD_NUM=0; else CARD_NUM=1; fi
+	#TMP=$(cat /proc/asound/card1/id 2>/dev/null)
+	#if [[ $TMP = "" ]]; then CARD_NUM=0; else CARD_NUM=1; fi
+
+	# Use configured card number
+	CARD_NUM=$(sqlite3 $SQLDB "select value from cfg_system where param='cardnum'")
 
 	if [[ $1 = "get-alsavol" ]]; then
 		# add quotes to sget $2 so mixer names with embedded spaces are parsed
@@ -95,7 +100,8 @@ fi
 # Get alsa mixer name
 if [[ $1 = "get-mixername" ]]; then
 	CARD_NUM=$(sqlite3 $SQLDB "select value from cfg_system where param='cardnum'")
-	awk -F"'" '/Simple mixer control/{print "(" $2 ")";}' <(amixer -c $CARD_NUM)
+	#awk -F"'" '/Simple mixer control/{print "(" $2 ")";}' <(amixer -c $CARD_NUM)
+	amixer -c $CARD_NUM | awk 'BEGIN{FS="\n"; RS="Simple mixer control"} $0 ~ "pvolume" {print $1}' | awk -F"'" '{print "(" $2 ")";}'
 	exit
 fi
 
@@ -129,6 +135,7 @@ if [[ $1 = "get-piano-dualmode" || $1 = "set-piano-dualmode" || $1 = "get-piano-
 fi
 
 if [[ $1 = "clear-syslogs" ]]; then
+	# Operating logs
 	truncate /var/log/alternatives.log --size 0
 	truncate /var/log/apt/history.log --size 0
 	truncate /var/log/apt/term.log --size 0
@@ -150,11 +157,21 @@ if [[ $1 = "clear-syslogs" ]]; then
 	truncate /var/log/regen_ssh_keys.log --size 0
 	truncate /var/log/samba/log.nmbd --size 0
 	truncate /var/log/samba/log.smbd --size 0
+	truncate /var/log/shairport-sync.log --size 0
 	truncate /var/log/syslog --size 0
 	truncate /var/log/user.log --size 0
 	truncate /var/log/wtmp --size 0
-	truncate /var/log/shairport-sync.log --size 0
-	#truncate /var/log/moode.log --size 0
+
+	# Rotated logs from settings in /etc/logrotate.d
+	rm /var/log/*.log.* 2> /dev/null
+	rm /var/log/debug.* 2> /dev/null
+	rm /var/log/messages.* 2> /dev/null
+	rm /var/log/syslog.* 2> /dev/null
+	rm /var/log/btmp.* 2> /dev/null
+	rm /var/log/apt/*.log.* 2> /dev/null
+	rm /var/log/nginx/*.log.* 2> /dev/null
+	rm /var/log/samba/log.*.* 2> /dev/null
+
 	exit
 fi
 

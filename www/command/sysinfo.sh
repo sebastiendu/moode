@@ -19,7 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 2019-MM-DD TC moOde 6.4.1
+# 2020-07-09 TC moOde 6.6.0
 #
 
 # check for sudo
@@ -29,7 +29,7 @@ SYSTEM_PARAMETERS() {
 	echo -e "\n\c"
 	echo -e "S Y S T E M   P A R A M E T E R S"
 	echo -e "\nmoOde release\t\t= $moode_rel\c"
-	echo -e "\nRaspbian OS\t\t= $RASPBIANVER\c"
+	echo -e "\nRaspiOS\t\t\t= $RASPIOS_VER\c"
 	echo -e "\nLinux kernel\t\t= $kernelver\c"
 	echo -e "\nPlatform\t\t= $hdwrrev\c"
 	echo -e "\nArchitecture\t\t= $ARCH ($kernel_architecture)\c"
@@ -63,6 +63,7 @@ SYSTEM_PARAMETERS() {
 	echo -e "\nOnboard WiFi\t\t= $piwifi\c"
 	echo -e "\nOnboard BT\t\t= $pibt\c"
 	echo -e "\nHDMI output\t\t= $HDMI\c"
+	echo -e "\nLED state\t\t= $led_state\c"
 	echo -e "\nEth addr wait\t\t= $eth0chk\c"
 	echo -e "\nMax USB current\t\t= $maxusbcurrent\c"
 	echo -e "\nUSB (UAC2) fix\t\t= $uac2fix\c"
@@ -105,6 +106,8 @@ AUDIO_PARAMETERS() {
 	echo -e "\nMixer name\t\t= $volmixer\c"
 	echo -e "\nHardware volume\t\t= $hwvol\c"
 	echo -e "\nMax ALSA volume\t\t= $alsavolume_max\c"
+	echo -e "\nMax MPD volume\t\t= $volume_mpd_max\c"
+	echo -e "\nVolume step limit\t= $volume_step_limit\c"
 	echo -e "\nAudio source\t\t= $audioin\c"
 	echo -e "\nOutput device\t\t= $audioout\c"
 	echo -e "\nResume MPD\t\t= $rsmafterinp\c"
@@ -145,6 +148,7 @@ AUDIO_PARAMETERS() {
 	echo -e "\nAutoplay\t\t= $autoplay\c"
 	echo -e "\nRotary encoder\t\t= $rotaryenc\c"
 	echo -e "\nEncoder params\t\t= $rotenc_params\c"
+	echo -e "\nUSB volume knob\t\t= $usb_volknob\c"
 	echo -e "\nPolarity inversion\t= $invert_polarity\c"
 	echo -e "\nCrossfeed\t\t= $crossfeed\c"
 	echo -e "\nCrossfade\t\t= $mpdcrossfade\c"
@@ -155,7 +159,8 @@ AUDIO_PARAMETERS() {
 
 APPEARANCE_SETTINGS() {
 	echo -e "A P P E A R A N C E   S E T T I N G S"
-	# themes and backgrounds
+	echo -e "\nThemes and backgrounds\c"
+	echo -e "\n----------------------\c"
 	echo -e "\nTheme\t\t\t= $themename\c"
 	echo -e "\nAccent color\t\t= $accentcolor\c"
 	echo -e "\nAlpha blend\t\t= $alphablend\c"
@@ -165,29 +170,34 @@ APPEARANCE_SETTINGS() {
 	echo -e "\nCover backdrop\t\t= $cover_backdrop\c"
 	echo -e "\nCover blur\t\t= $cover_blur\c"
 	echo -e "\nCover scale\t\t= $cover_scale\c"
-	# coverview options
-	echo -e "\nCoverView auto-display\t= $scnsaver_timeout\c"
-	echo -e "\nCoverView style\t\t= $scnsaver_style\c"
-	# other options
-	echo -e "\nAuto-shuffle filter\t= $ashuffle_filter\c"
-	echo -e "\nExtra metadata\t\t= $xtagdisp\c"
-	echo -e "\nPlayback history\t= $playhist\n"
-}
-
-LIBRARY_SETTINGS() {
-	echo -e "L I B R A R Y   S E T T I N G S"
+	echo -e "\n\nLibrary options\c"
+	echo -e "\n----------------------\c"
 	echo -e "\nInstant play action\t= $library_instant_play\c"
-	echo -e "\nShow genres column\t= $show_genres\c"
-	echo -e "\nAlbum grouping\t\t= by $library_album_grouping\c"
+	echo -e "\nShow tagview genres\t= $library_show_genres\c"
+	echo -e "\nShow tagview covers\t= $library_tagview_covers\c"
+	echo -e "\nShow sample rate\t= $library_encoded_at\c"
+	echo -e "\nEllipsis limited text\t= $library_ellipsis_limited_text\c"
+	echo -e "\nThumbnail columns\t= $library_thumbnail_columns\c"
+	echo -e "\nAlbumview sort order\t= by $library_albumview_sort\c"
+	echo -e "\nTagview sort order\t= by $library_tagview_sort\c"
 	echo -e "\nCompilation identifier\t= $library_comp_id\c"
 	echo -e "\nRecently added\t\t= $library_recently_added\c"
 	echo -e "\nIgnore articles\t\t= $ignore_articles\c"
 	echo -e "\nUTF8 character filter\t= $library_utf8rep\c"
 	echo -e "\nHi-res thumbs\t\t= $library_hiresthm\c"
 	echo -e "\nCover search pri\t= $library_covsearchpri\c"
-	echo -e "\nPixel ratio\t\t= $library_pixelratio\n"
-	#echo -e "\nArtist sort tag\t\t= $library_artist_sort\c"
-	#echo -e "\nAlbum sort tag\t\t= $library_album_sort\n"
+	echo -e "\nPixel ratio\t\t= $library_pixelratio\c"
+	echo -e "\n\nCoverview screen saver\c"
+	echo -e "\n----------------------\c"
+	echo -e "\nCoverView auto-display\t= $scnsaver_timeout\c"
+	echo -e "\nCoverView style\t\t= $scnsaver_style\c"
+	echo -e "\n\nOther options\c"
+	echo -e "\n----------------------\c"
+	echo -e "\nFont size\t\t= $font_size\c"
+	echo -e "\nAuto-shuffle filter\t= $ashuffle_filter\c"
+	echo -e "\nExtra metadata\t\t= $xtagdisp\c"
+	echo -e "\nPlayback history\t= $playhist\c"
+	echo -e "\nFirst use help\t\t= $first_use_help\n"
 }
 
 MPD_SETTINGS() {
@@ -246,6 +256,7 @@ RENDERER_SETTINGS() {
 		echo -e "\nVolume curve\t\t= $volume_curve\c"
 		echo -e "\nVolume normalization\t= $volume_normalization\c"
 		echo -e "\nNormalization pregain\t= $normalization_pregain\c"
+		echo -e "\nAutoplay\t\t= $spotify_autoplay\c"
 		echo -e "\nResume MPD\t\t= $rsmafterspot\n"
 	fi
 
@@ -301,7 +312,7 @@ FEAT_DJMOUNT=8192
 FEAT_BLUETOOTH=16384
 
 HOSTNAME=`uname -n`
-RASPBIANVER=`cat /etc/debian_version`
+RASPIOS_VER=`cat /etc/debian_version`
 #KERNEL=`uname -r`
 SOC=`cat /proc/device-tree/compatible | tr '\0' ' ' | awk -F, '{print $NF}'`
 CORES=`grep -c ^processor /proc/cpuinfo`
@@ -374,7 +385,7 @@ WIRINGPI_VER=$(gpio -v 2>&1 | awk 'NR==1 { print  $3 }')
 RPI_GPIO_VER=$(grep -iRl "RPi.GPIO-" /usr/local/lib/python3.7/dist-packages/ | awk -F "." '{print $3 "." $4 "." $5}' | cut -f 2 -d "-")
 
 # Moode release
-moode_rel="$(cat /var/www/footer.php | grep Release: | cut -f 2-3 -d " ")"
+moode_rel="$(awk '/Release: /{print $2 " " $3;}' /var/www/footer.php | cut -d"<" -f 1)"
 
 # Moode SQL data
 SQLDB=/var/local/www/db/moode-sqlite3.db
@@ -382,8 +393,6 @@ SQLDB=/var/local/www/db/moode-sqlite3.db
 # Airplay settings
 RESULT=$(sqlite3 $SQLDB "select value from cfg_airplay")
 readarray -t arr <<<"$RESULT"
-#[[ "${arr[0]}" = "1" ]] && airplaymeta2="On" || airplaymeta2="Off" deprecated
-#airplayvol=${arr[1]} deprecated
 interpolation=${arr[2]}
 output_format=${arr[3]}
 output_rate=${arr[4]}
@@ -437,6 +446,7 @@ initial_volume=${arr[1]}
 volume_curve=${arr[2]}
 volume_normalization=${arr[3]}
 normalization_pregain=${arr[4]}
+spotify_autoplay=${arr[5]}
 
 # Squeezelite settings
 RESULT=$(sqlite3 $SQLDB "select value from cfg_sl")
@@ -492,7 +502,7 @@ mpdmixer=${arr[36]}
 xtagdisp=${arr[37]}
 rsmafterapl=${arr[38]}
 lcdup=${arr[39]}
-show_genres=${arr[40]}
+library_show_genres=${arr[40]}
 extmeta=${arr[41]}
 maint_interval=${arr[42]}
 hdwrrev=${arr[43]}
@@ -593,9 +603,31 @@ rsmafterinp=${arr[120]}
 ignore_articles=${arr[122]}
 volknob_mpd=${arr[123]}
 volknob_preamp=${arr[124]}
-library_album_grouping=${arr[125]}
+library_albumview_sort=${arr[125]}
 kernel_architecture=${arr[126]}
 [[ "${arr[127]}" = "1" ]] && wake_display="On" || wake_display="Off"
+[[ "${arr[128]}" = "1" ]] && usb_volknob="On" || usb_volknob="Off"
+led_state=${arr[129]}
+library_tagview_covers=${arr[130]}
+library_tagview_sort=${arr[131]}
+library_ellipsis_limited_text=${arr[132]}
+appearance_modal_state=${arr[133]}
+font_size=${arr[134]}
+volume_step_limit=${arr[135]}
+volume_mpd_max=${arr[136]}
+library_thumbnail_columns=${arr[137]}
+if [[ "${arr[138]}" = "9" ]]; then
+	library_encoded_at="No"
+elif [[ "${arr[138]}" = "0" ]]; then
+	library_encoded_at="No (searchable)"
+elif [[ "${arr[138]}" = "1" ]]; then
+	library_encoded_at="HD only"
+elif [[ "${arr[138]}" = "2" ]]; then
+	library_encoded_at="Text"
+elif [[ "${arr[138]}" = "3" ]]; then
+	library_encoded_at="Badge"
+fi
+first_use_help=${arr[139]}
 
 # Network settings
 RESULT=$(sqlite3 $SQLDB "select * from cfg_network")
@@ -651,7 +683,6 @@ fi
 SYSTEM_PARAMETERS
 AUDIO_PARAMETERS
 APPEARANCE_SETTINGS
-LIBRARY_SETTINGS
 MPD_SETTINGS
 RENDERER_SETTINGS
 MOODE_LOG

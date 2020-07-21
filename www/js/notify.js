@@ -1,4 +1,4 @@
-/**
+/*!
  * moOde audio player (C) 2014 Tim Curtis
  * http://moodeaudio.org
  *
@@ -18,7 +18,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * 2019-08-08 TC moOde 6.0.0
+ * 2020-07-09 TC moOde 6.6.0
  *
  */
 
@@ -27,13 +27,14 @@ function notify(cmd, msg, duration) {
 
     var map = {
 		add: 'Added to playlist',
-        play: 'Added to playlist',
         clradd: 'Added after playlist cleared',
 		clrplay: 'Added after playlist cleared',
         addall: 'Added to playlist',
         playall: 'Added to playlist',
         clrplayall: 'Added after playlist cleared',
-		updmpddb: 'Updating...',
+        update_library: 'Updating library...',
+        library_updating: 'Library update in progress',
+        library_loading: 'Library loading...',
 		remove: 'Removed from playlist',
 		move: 'Playlist items moved',
 		savepl: 'Playlist saved',
@@ -44,17 +45,19 @@ function notify(cmd, msg, duration) {
 		delsavedpl: 'Playlist deleted',
 		newstation: 'New station created',
 		updstation: 'Station updated',
+        validation_check: 'Validation check',
 		blankentries: 'Blank entries are not allowed',
 		delstation: 'Station deleted',
 		updclockradio: 'Clock radio updated',
-		updcustomize: 'Settings updated',
+		settings_updated: 'Settings updated',
 		usbaudioready: 'USB audio ready',
 		favset: 'Name has been set',
 		favadded: 'Favorite has been added',
 		nofavtoadd: 'Nothing to add',
 		mpderror: 'MPD error',
-		reboot: 'Rebooting...',
-		shutdown: 'Shutting down...'
+		restart: 'Restarting...',
+		shutdown: 'Shutting down...',
+        viewport: 'Viewport'
     };
 
     if (typeof map[cmd] === undefined) {

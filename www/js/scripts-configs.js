@@ -1,4 +1,4 @@
-/**
+/*1
  * moOde audio player (C) 2014 Tim Curtis
  * http://moodeaudio.org
  *
@@ -18,61 +18,74 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * 2019-11-24 TC moOde 6.4.0
+ * 2020-05-03 TC moOde 6.5.2
  *
  */
 jQuery(document).ready(function($){ 'use strict';
+    GLOBAL.scriptSection = 'configs';
 	$('#config-back').show();
 	$('#config-tabs').css('display', 'flex');
 	$('#menu-bottom').css('display', 'none');
-	$('.moode-config-settings-div').hide();
+	$('#configure .row2-btns').hide();
 
 	// compensate for Android popup kbd changing the viewport, also for notch phones
 	$("meta[name=viewport]").attr("content", "height=" + $(window).height() + ", width=" + $(window).width() + ", initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover");
 	// store device pixel ratio
-	sendMoodeCmd('POST', 'updcfgsystem', {'library_pixelratio': window.devicePixelRatio});
+    $.post('command/moode.php?cmd=updcfgsystem', {'library_pixelratio': window.devicePixelRatio});
 
 	// load current cfg
-	var result = sendMoodeCmd('GET', 'read_cfgs_no_radio');
-	SESSION.json = result['cfg_system'];
-	THEME.json = result['cfg_theme'];
-    NETWORK.json = result['cfg_network'];
+    $.getJSON('command/moode.php?cmd=read_cfgs_no_radio', function(result) {
+    	SESSION.json = result['cfg_system'];
+    	THEME.json = result['cfg_theme'];
+        NETWORK.json = result['cfg_network'];
 
-	var tempOp = themeOp;
-	if (themeOp == 0.74902) {tempOp = 0.1};
+    	UI.mobile = $(window).width() < 480 ? true : false; /* mobile-ish */
+    	setFontSize();
 
-	// set theme
-	themeColor = str2hex(THEME.json[SESSION.json['themename']]['tx_color']);
-	themeBack = 'rgba(' + THEME.json[SESSION.json['themename']]['bg_color'] + ',' + SESSION.json['alphablend'] +')';
-	themeMcolor = str2hex(THEME.json[SESSION.json['themename']]['tx_color']);
-	tempcolor = splitColor($('.dropdown-menu').css('background-color'));
-	themeOp = tempcolor[3];
-	themeMback = 'rgba(' + THEME.json[SESSION.json['themename']]['bg_color'] + ',' + themeOp +')';
-	accentColor = themeToColors(SESSION.json['accent_color']);
-	document.body.style.setProperty('--themetext', themeMcolor);
-	var radio1 = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='30' height='30'><circle fill='%23" + accentColor.substr(1) + "' cx='14' cy='14.5' r='11.5'/></svg>";
-	var test = getCSSRule('.toggle .toggle-radio');
-	test.style.backgroundImage='url("' + radio1 + '")';
+    	var tempOp = themeOp;
+    	if (themeOp == 0.74902) {tempOp = 0.1};
 
-	if ($('.lib-config').length) {
-		$('#lib-config-btn').addClass('active');
-	}
-	else if ($('.snd-config').length) {
-		$('#snd-config-btn').addClass('active');
-	}
-	else if ($('.net-config').length) {
-		$('#net-config-btn').addClass('active');
-	}
-	else if ($('.sys-config').length) {
-		$('#sys-config-btn').addClass('active');
-	}
+    	// set theme
+    	themeColor = str2hex(THEME.json[SESSION.json['themename']]['tx_color']);
+    	themeBack = 'rgba(' + THEME.json[SESSION.json['themename']]['bg_color'] + ',' + SESSION.json['alphablend'] +')';
+    	themeMcolor = str2hex(THEME.json[SESSION.json['themename']]['tx_color']);
+    	tempcolor = splitColor($('.dropdown-menu').css('background-color'));
+    	themeOp = tempcolor[3];
+    	themeMback = 'rgba(' + THEME.json[SESSION.json['themename']]['bg_color'] + ',' + themeOp +')';
+    	accentColor = themeToColors(SESSION.json['accent_color']);
+    	document.body.style.setProperty('--themetext', themeMcolor);
+    	var radio1 = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='30' height='30'><circle fill='%23" + accentColor.substr(1) + "' cx='14' cy='14.5' r='11.5'/></svg>";
+    	var test = getCSSRule('.toggle .toggle-radio');
+    	test.style.backgroundImage='url("' + radio1 + '")';
 
-    // setup pines notify
-    $.pnotify.defaults.history = false;
+        document.body.style.setProperty('--config_modal_btn_bg', 'rgba(64,64,64,0.75)');
+        $('.modal-footer .btn').css('background-color', 'rgba(128,128,128,.35)');
 
-	// connect to server engine (lite version that just looks for db update running / complete)
-	engineMpdLite();
+    	if ($('.lib-config').length) {
+    		$('#lib-config-btn').addClass('active');
+    	}
+    	else if ($('.snd-config').length) {
+    		$('#snd-config-btn').addClass('active');
+    	}
+    	else if ($('.net-config').length) {
+    		$('#net-config-btn').addClass('active');
+    	}
+    	else if ($('.sys-config').length) {
+    		$('#sys-config-btn').addClass('active');
+    	}
 
+        // setup pines notify
+        $.pnotify.defaults.history = false;
+
+    	// Connect to server engines
+        engineMpdLite();
+        engineCmdLite();
+
+        // Busy spinner for Thumbcache update/re-gen initiated
+        if (GLOBAL.thmUpdInitiated == true) {
+            $('.busy-spinner').show();
+        }
+});
 	//
 	// EVENT HANDLERS
 	//
@@ -140,7 +153,7 @@ jQuery(document).ready(function($){ 'use strict';
 				//$('#eth0-method').val('dhcp').change(); // prevent both from being set to 'static'
 			}
 			else {
-				notify('needssid', '');
+				notify('needssid');
 			}
 		}
         else {
@@ -163,7 +176,7 @@ jQuery(document).ready(function($){ 'use strict';
 		if ($('#wlan0-method').val() == 'static') {
 			if ($(this).val() == '' || $(this).val() == 'None (activates AP mode)') {
                 $('#wlan0-static').hide();
-				notify('needdhcp', '');
+				notify('needdhcp');
 			}
             else {
                 $('#wlan0-static').show();
@@ -229,8 +242,9 @@ jQuery(document).ready(function($){ 'use strict';
 
 	// view thmcache status
     $('#view-thmcache-status').click(function(e) {
-		var resp = sendMoodeCmd('GET', 'thmcachestatus');
-		$('#thmcache-status').html(resp);
+        $.getJSON('command/moode.php?cmd=thmcachestatus', function(result) {
+            $('#thmcache-status').html(result);
+        });
 	});
 
     // info button (i) show/hide toggle

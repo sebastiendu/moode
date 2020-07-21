@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  * moOde audio player (C) 2014 Tim Curtis
  * http://moodeaudio.org
@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * 2019-04-12 TC moOde 5.0
+ * 2020-07-09 TC moOde 6.6.0
  *
  */
 require_once dirname(__FILE__) . '/inc/playerlib.php';
@@ -31,7 +31,7 @@ socket_getsockname($sock, $addr, $port);
 //workerLog('engineCmd(): Listening on port (' . $port . '}');
 
 if (false === ($fp = fopen(PORT_FILE, 'a'))) {
-	//workerLog('engineCmd(): File create failed');
+	workerLog('engineCmd(): File create failed');
 	echo json_encode('file create failed');
 	exit();
 }
@@ -52,7 +52,7 @@ while($sockres = socket_accept($sock)) {
 	$cmd = str_replace(array("\r\n","\r","\n"), '', $data);
 	//workerLog('engineCmd(): Received cmd: ' . $cmd);
 	break;
-} 
+}
 
 //workerLog('engineCmd(): Closing socket: ' . $port);
 socket_close($sock);
@@ -68,7 +68,7 @@ if ($cmd == 'btactive1') {
 	$cmd .= ',';
 	for ($i = 2; $i < count($result); $i++) {
 		if ($result[$i] != '**') {
-			$cmd .= substr($result[$i], 21) . '<br>';
+			$cmd .= ': ' . substr($result[$i], 21);
 		}
 	}
 }

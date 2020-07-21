@@ -19,7 +19,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * 2019-09-05 TC moOde 6.2.0
+ * 2020-MM-DD TC moOde 6.7.1
  *
  */
 
@@ -36,19 +36,15 @@ else {
 }
 
 // for save/remove actions
-$initiateDBUpd = false;
+$initiateLibraryUpd = false;
 
 // LIB CONFIG POSTS
 
-// update mpd database
-if (isset($_POST['updatempd'])) {
-	submitJob('updmpddb', '', 'Database update started...', '');
-}
 // rescan mpd database
-if (isset($_POST['rescanmpd'])) {
-	submitJob('rescanmpddb', '', 'Database rescan started...', '');
+if (isset($_POST['regen_library'])) {
+	submitJob('regen_library', '', 'Regenerating library...', 'Stay on this screen until the progress spinner is cleared');
 }
-// auto-update mpd db on usb insert/remove
+// auto-update mpd db on usb insert or remove
 if (isset($_POST['update_usb_auto_updatedb'])) {
 	if (isset($_POST['usb_auto_updatedb']) && $_POST['usb_auto_updatedb'] != $_SESSION['usb_auto_updatedb']) {
 		$_SESSION['notify']['title'] = $_POST['usb_auto_updatedb'] == '1' ? 'MPD auto-update on' : 'MPD auto-update off';
@@ -57,37 +53,32 @@ if (isset($_POST['update_usb_auto_updatedb'])) {
 	}
 }
 // re-mount nas sources
-if (isset($_POST['remount'])) {
-	$result_unmount = sourceMount('unmountall');
-	$result_mount = sourceMount('mountall');
-	//workerLog('lib-config: remount: (' . $result_unmount . ', ' . $result_mount . ')');
-	$_SESSION['notify']['title'] = 'Re-mount started...';
+if (isset($_POST['remount_sources'])) {
+	$result = cfgdb_read('cfg_source', $dbh);
+	if ($result === true) {
+		$_SESSION['notify']['title'] = 'No sources configured';
+	}
+	else {
+		$result_unmount = sourceMount('unmountall');
+		$result_mount = sourceMount('mountall');
+		//workerLog('lib-config: remount_sources: (' . $result_unmount . ', ' . $result_mount . ')');
+		$_SESSION['notify']['title'] = 'Re-mounting music sources...';
+	}
 }
 // Clear library cache
-if (isset($_POST['clrlibcache'])) {
+if (isset($_POST['clear_libcache'])) {
 	clearLibCache();
 	$_SESSION['notify']['title'] = 'Library cache cleared';
 }
-// update thumbnail cache
-if (isset($_POST['updthmcache'])) {
-	$result = sysCmd('pgrep -l thmcache.php');
-	if (strpos($result[0], 'thmcache.php') !== false) {
-		$_SESSION['notify']['title'] = 'Process is currently running';
-	}
-	else {
-		$_SESSION['thmcache_status'] = 'Updating thumbnail cache...';
-		submitJob('updthmcache', '', 'Updating thumbnail cache...', '');
-	}
-}
 // regenerate thumbnail cache
-if (isset($_POST['regenthmcache'])) {
+if (isset($_POST['regen_thmcache'])) {
 	$result = sysCmd('pgrep -l thmcache.php');
 	if (strpos($result[0], 'thmcache.php') !== false) {
 		$_SESSION['notify']['title'] = 'Process is currently running';
 	}
 	else {
 		$_SESSION['thmcache_status'] = 'Regenerating thumbnail cache...';
-		submitJob('regenthmcache', '', 'Regenerating thumbnail cache...', '');
+		submitJob('regen_thmcache', '', 'Regenerating thumbnail cache...', '');
 	}
 }
 
@@ -95,9 +86,10 @@ if (isset($_POST['regenthmcache'])) {
 
 // remove source
 if (isset($_POST['delete']) && $_POST['delete'] == 1) {
-	$initiateDBUpd = true;
+	$initiateLibraryUpd = true;
 	$_POST['mount']['action'] = 'delete';
-	submitJob('sourcecfg', $_POST, 'Music source removed', 'Database update started...');
+	$_POST['mount']['id'] = $_SESSION['src_mpid'];
+	submitJob('sourcecfg', $_POST, '', '');
 }
 // save source
 if (isset($_POST['save']) && $_POST['save'] == 1) {
@@ -110,7 +102,7 @@ if (isset($_POST['save']) && $_POST['save'] == 1) {
 
 	// server
 	if (empty(trim($_POST['mount']['address']))) {
-		$_SESSION['notify']['title'] = 'Host cannot be blank';
+		$_SESSION['notify']['title'] = 'Path cannot be blank';
 		$_SESSION['notify']['duration'] = 5;
 	}
 	// share
@@ -134,7 +126,7 @@ if (isset($_POST['save']) && $_POST['save'] == 1) {
 	}
 	// ok so save
 	else {
-		$initiateDBUpd = true;
+		$initiateLibraryUpd = true;
 		// cifs and nfs defaults if blank
 		if ($_POST['mount']['type'] != 'upnp') {
 			if (empty(trim($_POST['mount']['rsize']))) {$_POST['mount']['rsize'] = 61440;}
@@ -174,7 +166,7 @@ if (isset($_POST['save']) && $_POST['save'] == 1) {
 		$array['mount']['wsize'] = $_POST['mount']['wsize'];
 		$array['mount']['options'] = $_POST['mount']['options'];
 
-		submitJob('sourcecfg', $array, 'Source config saved', 'Database update started...');
+		submitJob('sourcecfg', $array, '', '');
 	}
 }
 // scanner
@@ -240,12 +232,16 @@ if (isset($_POST['manualentry']) && $_POST['manualentry'] == 1) {
 
 session_write_close();
 
-// initiate db update if indicated after sourcecfg job completes
+// Update library if indicated after sourcecfg job completes
 waitWorker(1, 'lib-config');
-
-if ($initiateDBUpd == true) {
-	//workerLog('lib-config(): Job: updmpddb');
-	submitJob('updmpddb', '', '', '');
+if ($initiateLibraryUpd == true) {
+	//$title = isset($_POST['save']) ? 'Music source saved' : 'Music source removed';
+	//submitJob('update_library', '', $title, 'Updating library...');
+	session_start();
+	$_SESSION['notify']['title'] = isset($_POST['save']) ? 'Music source saved' : 'Music source removed';
+	$_SESSION['notify']['duration'] = 3;
+	session_write_close();
+	unset($_GET['cmd']);
 }
 
 // LIB CONFIG FORM
@@ -270,11 +266,9 @@ if (!isset($_GET['cmd'])) {
 	// messages
 	if ($mounts === true) {
 		$_mounts .= '<p class="btn btn-large" style="width: 240px; background-color: #333;">None configured</p><p></p>';
-		$_remount_disable = 'disabled';
 	}
 	elseif ($mounts === false) {
 		$_mounts .= '<p class="btn btn-large" style="width: 240px; background-color: #333;">Query failed</p>';
-		$_remount_disable = '';
 	}
 
 	// auto-updatedb on usb insert/remove
@@ -389,6 +383,6 @@ if (isset($_GET['cmd']) && !empty($_GET['cmd'])) {
 $section = basename(__FILE__, '.php');
 storeBackLink($section, $tpl);
 
-include('/var/local/www/header.php');
+include('header.php');
 eval("echoTemplate(\"".getTemplate("templates/$tpl")."\");");
-include('footer.php');
+include('footer.min.php');

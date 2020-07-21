@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * 2019-MM-DD TC moOde 6.4.1
+ * 2020-04-24 TC moOde 6.5.0
  *
  */
 -->
@@ -247,7 +247,7 @@
 </div>
 
 <form class="form-horizontal" method="post">
-	<div id="net-config-defaults" class="modal modal-sm2 hide fade" tabindex="-1" role="dialog" aria-labelledby="net-config-defaults-label" aria-hidden="true">
+	<div id="net-config-defaults" class="modal modal-sm2 hide" tabindex="-1" role="dialog" aria-labelledby="net-config-defaults-label" aria-hidden="true">
 		<div class="modal-header">
 			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
 		</div>
@@ -264,16 +264,17 @@
 </form>
 
 <form class="form-horizontal" method="post">
-	<div id="manual-ssid" class="modal modal-sm hide fade" tabindex="-1" role="dialog" aria-labelledby="manual-ssid-label" aria-hidden="true">
+	<div id="manual-ssid" class="modal modal-sm hide" tabindex="-1" role="dialog" aria-labelledby="manual-ssid-label" aria-hidden="true">
 		<div class="modal-header">
 			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+			<h6>Manual SSID entry</h6>
 		</div>
 
 		<div class="modal-body">
 			<div class="control-group">
 				<label class="control-label" for="wlan0otherssid">SSID</label>
 				<div class="controls">
-					<input class="input-large" type="text" pattern="[A-Za-z0-9\-\_]{3,32}" id="wlan0otherssid" name="wlan0otherssid" value="" autofocus>
+					<input class="input-large" type="text" pattern="[A-Za-z0-9-_]{3,32}" id="wlan0otherssid" name="wlan0otherssid" value="" autofocus>
 					<a aria-label="Help" class="info-toggle" data-cmd="info-manualssid" href="#notarget"><i class="fas fa-info-circle"></i></a>
 					<span id="info-manualssid" class="help-block hide">
                     	Length 2-32 chars.

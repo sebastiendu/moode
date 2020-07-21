@@ -19,7 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 2019-MM-DD TC moOde 6.4.1
+# 2020-05-03 TC moOde 6.5.2
 #
 
 FPM_LIMIT=40
@@ -72,21 +72,31 @@ while true; do
 	# Audio output
 	CARD_NUM=$(sqlite3 $SQL_DB "SELECT value FROM cfg_mpd WHERE param='device'")
 	HW_PARAMS=$(cat /proc/asound/card$CARD_NUM/pcm0p/sub0/hw_params)
-	if [[ $HW_PARAMS != $HW_PARAMS_LAST ]]; then
+	TIME_STAMP=$(date +'%Y%m%d %H%M%S')
+	if [[ $HW_PARAMS = "closed" ]]; then
+		LOG_MSG=" watchdog: Info: Audio output is (closed)"
+	else
 		TIME_STAMP=$(date +'%Y%m%d %H%M%S')
-		if [[ $HW_PARAMS = "closed" ]]; then
-			LOG_MSG=" watchdog: Info: Audio output is (closed)"
-		else
-			TIME_STAMP=$(date +'%Y%m%d %H%M%S')
-			LOG_MSG=" watchdog: Info: Audio output is (in use)"
-			# Wake display on play
-			WAKE_DISPLAY=$(sqlite3 $SQL_DB "SELECT value FROM cfg_system WHERE param='wake_display'")
-			if [[ $WAKE_DISPLAY = "1" ]]; then
-				export DISPLAY=:0
-				xset s reset > /dev/null 2>&1
-			fi
+		LOG_MSG=" watchdog: Info: Audio output is (in use)"
+		# Wake display on play
+		WAKE_DISPLAY=$(sqlite3 $SQL_DB "SELECT value FROM cfg_system WHERE param='wake_display'")
+		if [[ $WAKE_DISPLAY = "1" ]]; then
+			export DISPLAY=:0
+			xset s reset > /dev/null 2>&1
 		fi
-		#echo $TIME_STAMP$LOG_MSG >> /var/log/moode.log
+	fi
+	#echo $TIME_STAMP$LOG_MSG >> /var/log/moode.log
+
+	# Wlan0
+	ETH0_IP_ADDR=$(ifconfig eth0 | grep "inet ")
+	if [[ $ETH0_IP_ADDR = "" ]]; then
+		WLAN0_IP_ADDR=$(ifconfig wlan0 | grep "inet ")
+		if [[ $WLAN0_IP_ADDR = "" ]]; then
+			wpa_cli -i wlan0 scan > /dev/null 2>&1
+			ip --force link set wlan0 up > /dev/null 2>&1
+			TIME_STAMP=$(date +'%Y%m%d %H%M%S')
+			echo $TIME_STAMP" watchdog: Wlan0 down attempting reset" >> /var/log/moode.log
+		fi
 	fi
 
 	sleep 6

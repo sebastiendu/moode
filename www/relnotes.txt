@@ -11,20 +11,286 @@
 
 ########################################################
 //
-// 6.4.1 2019-MM-DD
+// 2020-MM-DD TC moOde 6.7.1
 //
 ########################################################
 
 Updates
 
-- UPD: Add features availability to moodeutl
+- UPD: Use aplay names in MPD Audio output dropdown
+- UPD: Use new dtoverlay names for pi3-disable-wifi/bt
+- UPD: Improve method to change Browser title
+
+Bug fixes
+
+- FIX: Volume knob showing -1 in certain edge case
+- FIX: Driver option enable causes IC fail
+
+########################################################
+//
+// 2020-07-19 TC moOde 6.7.0
+//
+########################################################
+
+Updates
+
+- UPD: Bump to Linux kernel 5.4.51 build #1325
+- UPD: Support new ALSA card assignment scheme
+- UPD: Improved HDMI display support
+- UPD: Improved USB audio hot plug handling
+- UPD: Help text on System Config for 64-bit kernel option
+- UPD: Device name for Merus Amp HAT ZW
+- UPD: Setup guide to reflect changes
+
+Radio stations
+
+- UPD: Playable url for NME 1 and 2 to 256K streams
+- UPD: Playable url for Soho Radio London to 320K stream
+
+Bug fixes
+
+- FIX: Index search position for Tag view Album column on mobile
+- FIX: Logo path for BBC 320K stations
+- FIX: Missing 'kbps' label for BBC 320K stations
+
+########################################################
+//
+// 2020-07-09 TC moOde 6.6.0
+//
+########################################################
+
+New features
+
+- NEW: Radio station batch import/export
+- NEW: Option to display sample rate or HD badge in Library
+- NEW: Filter Library by sample rate and/or audio format
+- NEW: Option to adjust the number of thumbnail columns
+- NEW: First use help for Playback/Playbar switch
+- NEW: Airplay and Spotify renderers output via Bluetooth
+- NEW: Support for Browser native image lazy load
+- NEW: Custom scroll bars replace default white scroll bars
+- NEW: 64-bit ASIX and CF-912AC drivers for Allo USBridge SIG
+
+Updates
+
+- UPD: Upgrade to RaspiOS Buster Lite 2020-05-27 10.4 (New image only)
+- UPD: Bump to Linux kernel 5.4.49 build #1323
+- UPD: Bump to PHP-FPM 7.3.14 (New image only)
+- UPD: Bump to bluez-alsa 2.1.0-49ad348
+- UPD: Bump to MPD 0.21.24 (Default)
+- UPD: Bump to MPD 0.22~git-4d88bdd (Test)
+- UPD: Bump to upmpdcli 1.4.12-7ea91f5d
+- UPD: Use MusicBrainz date tags if present in track
+- UPD: Use check mark style on Library menu
+- UPD: Add X-Large font size option to Appearance
+- UPD: Add album count to Tag view
+- UPD: Improve browsing in Tag view
+- UPD: Improve renderer active and restart/shutdown overlays
+- UPD: Improve fetch for cover image files
+- UPD: Improve thumbnail generator
+- UPD: Improve software update check
+- UPD: Larger top buttons in Radio/Folder views for mobile
+
+Radio stations
+
+- NEW: Hi On Line - Classical
+- NEW: Hi On Line - France
+- NEW: Hi On Line - Gold
+- NEW: Hi On Line - Jazz
+- NEW: Hi On Line - Latin
+- NEW: Hi On Line - Lounge
+- NEW: Hi On Line - Pop (320K)
+- NEW: Hi On Line - Pop (FLAC)
+- NEW: Hi On Line - World
+- NEW: Radio Paradise - Main Mix
+- NEW: Radio Paradise - Mellow
+- NEW: Radio Paradise - Rock
+- NEW: Radio Paradise - World
+- NEW: Soma FM - Heavyweight Reggae
+- UPD: Playable url for 4ZZZ FM
+- UPD: Station logos for Absolut stations
+- UPD: Station logos for KUVO stations
+- UPD: Station logo for Soma FM - DEF CON
+- UPD: Station logo for Maschinengeist Radio
+- UPD: Station logo for Morow - Retro Progressive Rock
+- UPD: Station logo for Roots Legacy Radio - Dub UK & Roots Reggae
+- UPD: Change Koffee to smooth Chill
+- DEL: MPR - Minnesota Public Radio (playable URL fail)
+- DEL: JB Radio 2 FLAC (stops after song ends)
+
+Bug fixes
+
+- FIX: Bluez-alsa hangs at end of Playlist
+- FIX: Unhandled "Database locked" error in vol.sh and rotvol.sh
+- FIX: Playlist line 2 left alignment in mobile portrait
+- FIX: Wrong cover artist when album header clicked in Tag view
+- FIX: Header text for "Recently added" being set incorrectly
+- FIX: Empty search filter not resetting lib header
+- FIX: No media query for Pi Touch 443 x 799 viewport (Sq Pixels)
+- FIX: Knob text and play controls not scaling
+- FIX: Tag view tracklist show/hide state when switching to Library
+- FIX: Rotary encoder driver (rotenc.py) not checking volume_mpd_max
+
+########################################################
+//
+// 2020-05-03 TC moOde 6.5.2
+//
+########################################################
+
+Updates
+
+- UPD: Bump to miniDLNA 1.2.1+0763719 DSD support
+- UPD: Add wlan0 check/reset to watchdog
+- UPD: Add edge debounce delay to gpio-buttons
+
+Bug fixes
+
+- FIX: Start up logic for auto play and auto-shuffle
+- FIX: Librespot not compiled for arm6
+- FIX: Renderer active overlays not cleared when on configs
+- FIX: Podcast streams not being handled correctly
+- FIX: No Artist line when Tagview covers option = No
+- FIX: Enter key fail in Library search when alpha
+
+########################################################
+//
+// 2020-04-27 TC moOde 6.5.1
+//
+########################################################
+
+Updates
+
+- UPD: Remove Radio and Playlist search result tallies
+
+Bug fixes
+
+- FIX: Playlist not auto-scrolling in certain cases
+- FIX: Playlist item line 2 left margin not correct
+- FIX: Track info formatting from Folder view
+- FIX: Position issue with search reset buttons
+- FIX: Incorrect volume level when unmuting
+- FIX: Playbar timeline margins for tracks > 60 mins
+- FIX: Incorrect knob size on Pi 7" Touch
+
+########################################################
+//
+// 2020-04-24 TC moOde 6.5.0
+//
+########################################################
+
+New features
+
+- NEW: Adaptive UI version 6.5 fully asynchronous
+- NEW: Library play or instant play existing Playlist item
+- NEW: Library Tag and Album views get their own sorts
+- NEW: Library custom search by year or year range
+- NEW: Library context menu option for Track info
+- NEW: MPD DB and Thumb udpate combined into "Library update"
+- NEW: CoverView screen saver with Playbar controls
+- NEW: Appearance options including Global font size
+- NEW: Audio config option for USB volume knob
+- NEW: System config option for LED0 and LED1
+- NEW: Spotify config option to autoplay similar songs
+- NEW: Configurable volume step limit
+- NEW: Configurable max MPD volume
+
+Updates
+
+- UPD: Upgrade to Raspbian Buster Lite 10.3 2020-02-13
+- UPD: Bump to Linux kernel 4.19.115 build #1305
+- UPD: Bump to MPD 0.21.22 (default) plus MPD 0.22~git (test)
+- UPD: Bump to shairport-sync 3.3.6
+- UPD: Bump to librespot v0.1.1 (armv7l-only)
+- UPD: Bump to moodeutl 1.4.0
+- UPD: Add DSD rate to extra-metadata
+- UPD: Add -D option to moodeutl (delete session var)
+- UPD: Add click anywhere off context menu to close
+- UPD: Add confirmation modals to Library config
+- UPD: Add "No action" option to Library Instant play action
+- UPD: Add ability to update station logo while editing station
+- UPD: Add Command API section to Setup guide
+- UPD: Add -enable-features=OverlayScrollbar to xinitrc
+- UPD: Pi 7" Touch prevent display blank while audio playing
+- UPD: Sort recently added albums so most recent is on top
+- UPD: Disable apt-daily and apt-daily-upgrade timers
+- UPD: Deprecate librespot armv6l binary
+
+Bug fixes
+
+- FIX: Wrong DSD encoded-at rates shown on Audio info
+- FIX: Audio info Formats showing PHP error message
+- FIX: WiFi/BT options missing from System config for Zero W
+- FIX: Last track (toggle song) id not persisting
+- FIX: Typo in bt.sh help text
+- FIX: Checkbox layout in Clock Radio
+- FIX: Minor corrections to Setup guide
+
+Audio devices
+
+- NEW: Infineon MERUS Amp HAT ZW
+
+Radio stations
+
+- UPD: BBC Radio 5 live
+- UPD: RadioActive FM 88.6
+- UPD: Radio Caroline
+- UPD: Swedish Classic Radio
+- UPD: WBJC Baltimore 91.5 - Classical
+- DEL: Amys FM (320K)
+- DEL: Amys FM Spirit of Soul (320K)
+- DEL: CBC Radio 2
+- DEL: JB Radio-2 USA (320K)
+- DEL: Radio Monash
+- DEL: Radionomy
+- DEL: Rinse FM
+- DEL: RSD Radio
+- DEL: VRT - Sporza
+
+########################################################
+//
+// 6.4.2 2020-02-12
+//
+########################################################
+
+Updates
+
+- UPD: Bump to Linux kernel 4.19.97 build #1293
+- UPD: Bump to v2.0.0 ASIX USB/Eth driver for USBridge SIG
+- UPD: Purge orphaned stations from session during startup
+- UPD: Add moodeutl option to dump the session file
+- UPD: Add triggerhappy (disabled) plus default media.conf
+- UPD: Deprecate TRX test software
+- UPD: Reset Auto-shuffle random play to Off during startup
+- UPD: Replace alsa-capabilities with alsacap
+- UPD: Remove DR P7 Mix station (no longer broadcasting)
+- UPD: Edit Setup guide to reflect changes
+
+Bug fixes
+
+- FIX: Session not updated when radio station deleted
+
+########################################################
+//
+// 6.4.1 2020-01-23
+//
+########################################################
+
+Updates
+
 - UPD: Improve volume knob step limiter
 - UPD: Improve mixer name parsing for USB DAC's
-- UPD: Improve message after changing Device type
+- UPD: Improve message after changing MPD Device type
+- UPD: Improve system integrity checking
+- UPD: Improve system maintenance task
+- UPD: Improve clear-syslogs in util.sh
 - UPD: Use mixer name 'Channels' for HiFiBerry Amp(Amp+)
+- UPD: Use mixer name 'DSPVolume' for HiFiBerry DAC+ DSP
 - UPD: Comment out Info logging from watchdog
-- UPD: Edit Setup guide to reflect changes
+- UPD: Add feat availability, free disk space to moodeutl
+- UPD: Add back button to Radio view
+- UPD: Add revision code for Pi-4B v1.2
 - UPD: Remove 64-bit kernel option for USBridge SIG (missing drivers)
+- UPD: Edit Setup guide to reflect changes
 
 Bug fixes
 
@@ -37,6 +303,9 @@ Bug fixes
 - FIX: Minor bugs in certain Audio info variable names
 - FIX: Missing -S option in stock squeezelite.conf
 - FIX: PHP log file name in util.sh
+- FIX: URI not being encoded when adding to Favorites
+- FIX: Index search fails when tagViewCovers flag is false
+- FIX: Highlight rectangle showing after button press
 
 ########################################################
 //

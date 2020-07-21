@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  * moOde audio player (C) 2014 Tim Curtis
  * http://moodeaudio.org
@@ -19,18 +19,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * 2019-04-12 TC moOde 5.0
+ * 2020-MM-DD TC moOde 6.7.1
  *
  */
- 
+
 require_once dirname(__FILE__) . '/inc/playerlib.php';
 
-playerSession('open', '', ''); 
+playerSession('open', '', '');
 session_write_close();
 
 $section = basename(__FILE__, '.php');
 
-$tpl = "indextpl.html";
-include('/var/local/www/header.php'); 
+$tpl = "indextpl.min.html";
+include('header.php');
 eval("echoTemplate(\"".getTemplate("/var/www/templates/$tpl")."\");");
-include('footer.php');
+include('footer.min.php');

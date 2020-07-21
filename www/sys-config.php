@@ -19,7 +19,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * 2019-MM-DD TC moOde 6.4.1
+ * 2020-MM-DD TC moOde 6.7.1
  *
  */
 
@@ -31,22 +31,25 @@ playerSession('open', '' ,'');
 
 // SOFTWARE UPDATE
 
-// check for software update
+// Check for software update
 if (isset($_POST['checkfor_update'])) {
 	$available = checkForUpd($_SESSION['res_software_upd_url'] . '/');
 	$lastinstall = checkForUpd('/var/local/www/');
 
-	// up to date
+	// Up to date
 	if ($available['Date'] == $lastinstall['Date']) {
 		$_available_upd = 'Software is up to date<br>';
 	}
-	// update available
+	// Image-only release available
+	elseif ($available['ImageOnly'] == 'Yes') {
+		$_available_upd = 'A new image-only release of moOde is available. Visit <a href="http://moodeaudio.org" class="moode-about-link" target="_blank">moodeaudio.org</a> for more information.';
+	}
+	// In-place update available
 	else {
 		$_available_upd = $available['Date'] == 'None' ? $available['Date'] . '<br>' : 'Package date: ' . $available['Date'] .
 			'<button class="btn btn-primary btn-small set-button btn-submit" id="install-update" type="submit" name="install_update" value="1">Install</button>' .
 			'<button class="btn btn-primary btn-small set-button" data-toggle="modal" href="#view-pkgcontent">View</button><br>' .
-			'<span class="help-block-configs help-block-margin" style="margin-bottom:5px">Progress can be monitored via SSH cmd: moodeutl -t</span>'; //r45a
-
+			'<span class="help-block-configs help-block-margin" style="margin-bottom:5px">Progress can be monitored via SSH cmd: moodeutl -t</span>';
 		$_pkg_description = $available['Description'];
 		$_pkg_relnotes = $available['Relnotes'];
 	}
@@ -68,7 +71,7 @@ if (isset($_POST['install_update'])) {
 			$_SESSION['notify']['msg'] = "File system is compressed and read-only";
 			$_SESSION['notify']['duration'] = 20;
 		}
-		elseif ($space[0] < 500000) {
+		elseif ($space[0] < 512000) {
 			$_SESSION['notify']['title'] = 'Insufficient space';
 			$_SESSION['notify']['msg'] = "Update cannot proceed without at least 500M space";
 			$_SESSION['notify']['duration'] = 20;
@@ -97,7 +100,8 @@ if (isset($_POST['update_host_name'])) {
 			$_SESSION['notify']['title'] = 'Invalid input';
 			$_SESSION['notify']['msg'] = "Host name can only contain A-Z, a-z, 0-9 or hyphen (-).";
 			$_SESSION['notify']['duration'] = 3;
-		} else {
+		}
+		else {
 			submitJob('hostname', '"' . $_SESSION['hostname'] . '" ' . '"' . $_POST['hostname'] . '"', 'Host name changed', 'Reboot required');
 			playerSession('write', 'hostname', $_POST['hostname']);
 		}
@@ -115,7 +119,6 @@ if (isset($_POST['update_keyboard'])) {
 // browser title
 if (isset($_POST['update_browser_title'])) {
 	if (isset($_POST['browsertitle']) && $_POST['browsertitle'] != $_SESSION['browsertitle']) {
-		submitJob('browsertitle', '"' . $_SESSION['browsertitle'] . '" ' . '"' . $_POST['browsertitle'] . '"', 'Browser title changed', 'Refresh Browser');
 		playerSession('write', 'browsertitle', $_POST['browsertitle']);
 	}
 }
@@ -134,6 +137,7 @@ if (isset($_POST['update_kernel_architecture'])) {
 	playerSession('write', 'kernel_architecture', $_POST['kernel_architecture']);
 }
 
+// USB auto-mounter
 if (isset($_POST['update_usb_auto_mounter'])) {
 	submitJob('usb_auto_mounter', $_POST['usb_auto_mounter'], 'USB auto-mounter updated', 'Reboot required');
 	playerSession('write', 'usb_auto_mounter', $_POST['usb_auto_mounter']);
@@ -158,6 +162,20 @@ if (isset($_POST['hdmiport']) && $_POST['hdmiport'] != $_SESSION['hdmiport']) {
 	$title = $_POST['hdmiport'] == 1 ? 'HDMI port on' : 'HDMI port off';
 	submitJob('hdmiport', $_POST['hdmiport'], $title, '');
 	playerSession('write', 'hdmiport', $_POST['hdmiport']);
+}
+
+// Activity LED (LED0)
+if (isset($_POST['update_actled']) && $_POST['actled'] != explode(',', $_SESSION['led_state'])[0]) {
+	$title = $_POST['actled'] == '1' ? 'Activity LED on' : 'Activity LED off';
+	submitJob('actled', $_POST['actled'], $title, '');
+	playerSession('write', 'led_state', $_POST['actled'] . ',' . explode(',', $_SESSION['led_state'])[1]);
+}
+
+// Power LED (LED1)
+if (isset($_POST['update_pwrled']) && $_POST['pwrled'] != explode(',', $_SESSION['led_state'])[1]) {
+	$title = $_POST['pwrled'] == '1' ? 'Power LED on' : 'Power LED off';
+	submitJob('pwrled', $_POST['pwrled'], $title, '');
+	playerSession('write', 'led_state', explode(',', $_SESSION['led_state'])[0] . ',' . $_POST['pwrled']);
 }
 
 // eth0 check
@@ -345,8 +363,7 @@ if ($_SESSION['feat_bitmask'] & FEAT_KERNEL) {
 	$model = substr($_SESSION['hdwrrev'], 3, 1);
 	$name = $_SESSION['hdwrrev'];
 	// Pi-2B rev 1.2, Allo USBridge SIG, Pi-3B/B+/A+, Pi-4B
-	//if ($name == 'Pi-2B 1GB v1.2' || $name == 'Allo USBridge SIG [CM3+ Lite 1GB v1.0]' || $model == '3' || $model == '4') {
-	if ($name == 'Pi-2B 1GB v1.2' || $model == '3' || $model == '4') {
+	if ($name == 'Pi-2B 1GB v1.2' || $model == '3' || $model == '4' || $name == 'Allo USBridge SIG [CM3+ Lite 1GB v1.0]') {
 		$_select['kernel_architecture'] .= "<option value=\"64-bit\" " . (($_SESSION['kernel_architecture'] == '64-bit') ? "selected" : "") . ">64-bit</option>\n";
 	}
 }
@@ -362,7 +379,7 @@ $_select['usb_auto_mounter'] .= "<option value=\"devmon\" " . (($_SESSION['usb_a
 $model = substr($_SESSION['hdwrrev'], 3, 1);
 $name = $_SESSION['hdwrrev'];
 // Pi-Zero W, Pi-3B/B+/A+, Pi-4B
-if ($name == 'Pi-Zero W' || $model == '3' || $model == '4') {
+if ($name == 'Pi-Zero W 512MB v1.1' || $model == '3' || $model == '4') {
 	$_wifibt_hide = '';
 	$_select['p3wifi1'] .= "<input type=\"radio\" name=\"p3wifi\" id=\"togglep3wifi1\" value=\"1\" " . (($_SESSION['p3wifi'] == 1) ? "checked=\"checked\"" : "") . ">\n";
 	$_select['p3wifi0'] .= "<input type=\"radio\" name=\"p3wifi\" id=\"togglep3wifi2\" value=\"0\" " . (($_SESSION['p3wifi'] == 0) ? "checked=\"checked\"" : "") . ">\n";
@@ -377,6 +394,21 @@ else {
 $_select['hdmiport1'] .= "<input type=\"radio\" name=\"hdmiport\" id=\"togglehdmiport1\" value=\"1\" " . (($_SESSION['hdmiport'] == 1) ? "checked=\"checked\"" : "") . ">\n";
 $_select['hdmiport0'] .= "<input type=\"radio\" name=\"hdmiport\" id=\"togglehdmiport2\" value=\"0\" " . (($_SESSION['hdmiport'] == 0) ? "checked=\"checked\"" : "") . ">\n";
 
+// Activity LED (LED0)
+$actled = explode(',', $_SESSION['led_state'])[0];
+$_select['actled1'] .= "<input type=\"radio\" name=\"actled\" id=\"toggle_actled1\" value=\"1\" " . (($actled == '1') ? "checked=\"checked\"" : "") . ">\n";
+$_select['actled0'] .= "<input type=\"radio\" name=\"actled\" id=\"toggle_actled2\" value=\"0\" " . (($actled == '0') ? "checked=\"checked\"" : "") . ">\n";
+
+// Power LED (LED1)
+if (substr($_SESSION['hdwrrev'], 0, 7) == 'Pi-Zero' || substr($_SESSION['hdwrrev'], 3, 1) == '1' || $_SESSION['hdwrrev'] == 'Allo USBridge SIG [CM3+ Lite 1GB v1.0]') {
+	$_pwrled_hide = 'hide';
+}
+else {
+	$_pwrled_hide = '';
+	$pwrled = explode(',', $_SESSION['led_state'])[1];
+	$_select['pwrled1'] .= "<input type=\"radio\" name=\"pwrled\" id=\"toggle_pwrled1\" value=\"1\" " . (($pwrled == '1') ? "checked=\"checked\"" : "") . ">\n";
+	$_select['pwrled0'] .= "<input type=\"radio\" name=\"pwrled\" id=\"toggle_pwrled2\" value=\"0\" " . (($pwrled == '0') ? "checked=\"checked\"" : "") . ">\n";
+}
 // eth0 check
 $_select['eth0chk1'] .= "<input type=\"radio\" name=\"eth0chk\" id=\"toggleeth0chk1\" value=\"1\" " . (($_SESSION['eth0chk'] == 1) ? "checked=\"checked\"" : "") . ">\n";
 $_select['eth0chk0'] .= "<input type=\"radio\" name=\"eth0chk\" id=\"toggleeth0chk2\" value=\"0\" " . (($_SESSION['eth0chk'] == 0) ? "checked=\"checked\"" : "") . ">\n";
@@ -408,7 +440,7 @@ else {
 }
 
 // android 'add to home'
-$result = sysCmd('grep "add2home_off" /var/local/www/header.php');
+$result = sysCmd('grep "add2home_off" /var/www/header.php');
 $_select['add2home1'] .= "<input type=\"radio\" name=\"add2home\" id=\"toggleadd2home1\" value=\"1\" " . ((empty($result[0])) ? "checked=\"checked\"" : "") . ">\n";
 $_select['add2home0'] .= "<input type=\"radio\" name=\"add2home\" id=\"toggleadd2home2\" value=\"0\" " . ((!empty($result[0])) ? "checked=\"checked\"" : "") . ">\n";
 
@@ -521,6 +553,6 @@ $tpl = "sys-config.html";
 $section = basename(__FILE__, '.php');
 storeBackLink($section, $tpl);
 
-include('/var/local/www/header.php');
+include('header.php');
 eval("echoTemplate(\"" . getTemplate("templates/$tpl") . "\");");
-include('footer.php');
+include('footer.min.php');

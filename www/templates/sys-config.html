@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * 2019-MM-DD TC moOde 6.4.1
+ * 2020-07-19 TC moOde 6.7.0
  *
  */
 -->
@@ -99,11 +99,10 @@
 						<button class="btn btn-primary btn-small set-button btn-submit" type="submit" name="update_kernel_architecture" value="novalue">Set</button>
 						<a aria-label="Help" class="info-toggle" data-cmd="info-kernel_architecture" href="#notarget"><i class="fas fa-info-circle"></i></a>
 						<span class="help-block-configs help-block-margin" style="margin-top: 0px; padding-top: 0px;">
-							WARNING: Comfast CF-912AC WiFi adapter is only supported in the 32-bit kernel.
+							The 64-bit kernel option may not be offered on all platforms. See (i) help for more information.
 						</span>
 						<span id="info-kernel_architecture" class="help-block-configs help-block-margin hide">
-							<!--NOTE: The 64-bit kernel is a testing option for Pi4, Pi3, Pi2B rev 1.2 and Allo USBride Signature [CM3+ Lite] boards.-->
-							NOTE: The 64-bit kernel is a testing option for Pi4, Pi3, and Pi2B rev 1.2 boards.
+							NOTE: The 64-bit kernel is a testing option for Allo USBridge SIG, Pi-4, Pi-3, and Pi-2B rev 1.2 boards.<br>
 						</span>
 					</div>
 				</div>
@@ -117,8 +116,8 @@
 					</select>
 					<button class="btn btn-primary btn-small set-button btn-submit" type="submit" name="update_usb_auto_mounter" value="novalue">Set</button>
 					<a aria-label="Help" class="info-toggle" data-cmd="info_usb_auto_mounter" href="#notarget"><i class="fas fa-info-circle"></i></a>
-					<span id="info_usb_auto_mounter" class="help-block-configs help-block-margin hide">
-						For ARM6 platforms (Pi-1B, Zero/w, etc) select Devmon, otherwise select Udisks-glue.
+					<span class="help-block-configs help-block-margin" style="margin-top: 0px; padding-top: 0px;">
+						For ARM6 platforms (Pi-1B, Zero/w, etc) select <b>Devmon</b>, otherwise select <b>Udisks-glue (Default)</b>.
 					</span>
 				</div>
 			</div>
@@ -182,6 +181,45 @@
 				</div>
 			</div>
 
+			<div class="control-group">
+				<label class="control-label">LED0 (Activity)</label>
+				<div class="controls">
+					<div class="toggle">
+						<label class="toggle-radio" for="toggle_actled2">ON</label>
+						$_select[actled1]
+						<label class="toggle-radio" for="toggle_actled1">OFF</label>
+						$_select[actled0]
+					</div>
+					<div style="display: inline-block; vertical-align: top; margin-top: 4px;">
+						<button class="btn btn-primary btn-small btn-submit" type="submit" name="update_actled" value="novalue">Set</button>
+						<a aria-label="Help" class="info-toggle" data-cmd="info-actled" href="#notarget"><i class="fas fa-info-circle"></i></a>
+					</div>
+					<span id="info-actled" class="help-block-configs help-block-margin hide">
+						LED0 default trigger is SDCard (mmc0) activity.
+                    </span>
+				</div>
+			</div>
+
+			<div class="$_pwrled_hide">
+				<div class="control-group">
+					<label class="control-label">LED1 (Power)</label>
+					<div class="controls">
+						<div class="toggle">
+							<label class="toggle-radio" for="toggle_pwrled2">ON</label>
+							$_select[pwrled1]
+							<label class="toggle-radio" for="toggle_pwrled1">OFF</label>
+							$_select[pwrled0]
+						</div>
+						<div style="display: inline-block; vertical-align: top; margin-top: 4px;">
+							<button class="btn btn-primary btn-small btn-submit" type="submit" name="update_pwrled" value="novalue">Set</button>
+							<a aria-label="Help" class="info-toggle" data-cmd="info-pwrled" href="#notarget"><i class="fas fa-info-circle"></i></a>
+						</div>
+						<span id="info-pwrled" class="help-block-configs help-block-margin hide">
+							LED1 default trigger is default-on for Power.
+	                    </span>
+					</div>
+				</div>
+			</div>
 			<div class="control-group">
 				<label class="control-label">Wait for eth0 address</label>
 				<div class="controls">
@@ -300,22 +338,6 @@
 					</div>
 				</div>
 			</div>
-
-			<!--div class="control-group">
-				<label class="control-label" for="mpdtimeout">MPD engine timeout</label>
-				<div class="controls">
-					<select id="mpdtimeout" class="input-large" name="mpdtimeout">
-						$_select[mpdtimeout]
-					</select>
-					<button class="btn btn-primary btn-small set-button btn-submit" type="submit" name="update_mpdtimeout" value="novalue">Set</button>
-					<a aria-label="Help" class="info-toggle" data-cmd="info-mpdtimeout" href="#notarget"><i class="fas fa-info-circle"></i></a>
-					<span id="info-mpdtimeout" class="help-block-configs help-block-margin hide">
-						This setting controls how often PHP times out its connection to MPD.<br>
-						Timing out more often reduces the likelyhood of a rare "too many connections" condition but will cause the screen to briefly refresh when timeout occurs.<br>
-						The default value is (Never).<br>
-					</span>
-				</div>
-			</div r45b deprecate-->
 		</fieldset>
 
 		<div class="$_feat_localui">
@@ -582,21 +604,6 @@
 				</div>
 			</div>
 		</fieldset>
-
-		<div id="view-pkgcontent" class="modal modal-sm2 hide fade" tabindex="-1" role="dialog" aria-labelledby="view-pkgcontent-label" aria-hidden="true">
-			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-				<h3 id="view-pkgcontent-label">Package content</h3>
-			</div>
-			<div class="modal-body">
-				$_pkg_description
-				$_pkg_relnotes
-			</div>
-			<div class="modal-footer">
-				<button class="btn singleton" data-dismiss="modal" aria-hidden="true">Close</button>
-			</div>
-		</div>
-
 	</form>
 </div>
 </div>
@@ -604,7 +611,23 @@
 <!-- MODALS -->
 
 <form class="form-horizontal" method="post">
-	<div id="expand-rootfs" class="modal modal-sm2 hide fade" tabindex="-1" role="dialog" aria-labelledby="expand-rootfs-label" aria-hidden="true">
+	<div id="view-pkgcontent" class="modal modal-sm2 hide" tabindex="-1" role="dialog" aria-labelledby="view-pkgcontent-label" aria-hidden="true">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+			<h3 id="view-pkgcontent-label">Package content</h3>
+		</div>
+		<div class="modal-body">
+			$_pkg_description
+			$_pkg_relnotes
+		</div>
+		<div class="modal-footer">
+			<button class="btn singleton" data-dismiss="modal" aria-hidden="true">Close</button>
+		</div>
+	</div>
+</form>
+
+<form class="form-horizontal" method="post">
+	<div id="expand-rootfs" class="modal modal-sm2 hide" tabindex="-1" role="dialog" aria-labelledby="expand-rootfs-label" aria-hidden="true">
 		<div class="modal-header">
 			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
 		</div>
@@ -621,7 +644,7 @@
 </form>
 
 <form class="form-horizontal" method="post">
-	<div id="enable-usbboot" class="modal modal-sm2 hide fade" tabindex="-1" role="dialog" aria-labelledby="enable-usbboot-label" aria-hidden="true">
+	<div id="enable-usbboot" class="modal modal-sm2 hide" tabindex="-1" role="dialog" aria-labelledby="enable-usbboot-label" aria-hidden="true">
 		<div class="modal-header">
 			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
 		</div>
@@ -638,7 +661,7 @@
 </form>
 
 <form class="form-horizontal" method="post">
-	<div id="clear-browser-cache" class="modal modal-sm2 hide fade" tabindex="-1" role="dialog" aria-labelledby="clear-browser-cache-label" aria-hidden="true">
+	<div id="clear-browser-cache" class="modal modal-sm2 hide" tabindex="-1" role="dialog" aria-labelledby="clear-browser-cache-label" aria-hidden="true">
 		<div class="modal-header">
 			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
 		</div>
@@ -655,7 +678,7 @@
 </form>
 
 <form class="form-horizontal" method="post">
-	<div id="clear-playbackhist" class="modal modal-sm2 hide fade" tabindex="-1" role="dialog" aria-labelledby="clear-playbackhist-label" aria-hidden="true">
+	<div id="clear-playbackhist" class="modal modal-sm2 hide" tabindex="-1" role="dialog" aria-labelledby="clear-playbackhist-label" aria-hidden="true">
 		<div class="modal-header">
 			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
 		</div>
@@ -672,7 +695,7 @@
 </form>
 
 <form class="form-horizontal" method="post">
-	<div id="clear-syslogs" class="modal modal-sm2 hide fade" tabindex="-1" role="dialog" aria-labelledby="clear-syslogs-label" aria-hidden="true">
+	<div id="clear-syslogs" class="modal modal-sm2 hide" tabindex="-1" role="dialog" aria-labelledby="clear-syslogs-label" aria-hidden="true">
 		<div class="modal-header">
 			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
 		</div>
@@ -689,7 +712,7 @@
 </form>
 
 <form class="form-horizontal" method="post">
-	<div id="compact-sqlitedb" class="modal modal-sm2 hide fade" tabindex="-1" role="dialog" aria-labelledby="compact-sqlitedb-label" aria-hidden="true">
+	<div id="compact-sqlitedb" class="modal modal-sm2 hide" tabindex="-1" role="dialog" aria-labelledby="compact-sqlitedb-label" aria-hidden="true">
 		<div class="modal-header">
 			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
 		</div>

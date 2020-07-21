@@ -19,7 +19,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * 2019-MM-DD TC moOde 6.4.1
+ * 2020-MM-DD TC moOde 6.7.1
  *
  */
 
@@ -41,9 +41,7 @@ if (isset($_POST['save']) && $_POST['save'] == '1') {
 
 	// Set 0 volume for mixer type disabled
 	if ($_POST['conf']['mixer_type'] == 'disabled') {
-		sendMpdCmd($sock, 'setvol 0');
-		$resp = readMpdResp($sock);
-		closeMpdSock($sock);
+		sysCmd('/var/www/vol.sh 0');
 	}
 
 	// Update the mixertype for audioout -> local
@@ -51,8 +49,8 @@ if (isset($_POST['save']) && $_POST['save'] == '1') {
 
 	// Update /etc/mpd.conf
 	if ($queueargs == 'devicechg') {
-		$title = 'Device type has changed';
-		$message = 'Reboot required';
+		$title = 'Audio output has changed';
+		$message = 'Restart required';
 		$duration = 10;
 	}
 	else {
@@ -80,14 +78,13 @@ else {
 	$_hide_msg = 'hide';
 }
 
-// MPD version specific params
-$_hide_020_params = substr($_SESSION['mpdver'], 0, 4) == '0.21' ? 'hide' : '';
-$_hide_021_params = substr($_SESSION['mpdver'], 0, 4) == '0.20' ? 'hide' : '';
-
+// NOTE needs a redo for the new card numbering scheme involving HDMI
 // Device type
 $dev = getDeviceNames();
 if ($dev[0] != '') {$_mpd_select['device'] .= "<option value=\"0\" " . (($mpdconf['device'] == '0') ? "selected" : "") . " >$dev[0]</option>\n";}
 if ($dev[1] != '') {$_mpd_select['device'] .= "<option value=\"1\" " . (($mpdconf['device'] == '1') ? "selected" : "") . " >$dev[1]</option>\n";}
+if ($dev[2] != '') {$_mpd_select['device'] .= "<option value=\"2\" " . (($mpdconf['device'] == '2') ? "selected" : "") . " >$dev[2]</option>\n";}
+if ($dev[3] != '') {$_mpd_select['device'] .= "<option value=\"3\" " . (($mpdconf['device'] == '3') ? "selected" : "") . " >$dev[3]</option>\n";}
 
 // Volume control
 $_mpd_select['mixer_type'] .= "<option value=\"software\" " . (($mpdconf['mixer_type'] == 'software') ? "selected" : "") . ">Software</option>\n";
@@ -156,13 +153,9 @@ $_mpd_select['volume_normalization'] .= "<option value=\"no\" " . (($mpdconf['vo
 // Audio buffer size
 $_mpd_select['audio_buffer_size'] = $mpdconf['audio_buffer_size'];
 
-// Buffer fill % before play (0.20.y only)
-if ($_hide_020_params == '') {
-	$_mpd_select['buffer_before_play'] .= "<option value=\"0%\" " . (($mpdconf['buffer_before_play'] == '0%') ? "selected" : "") . " >Disabled</option>\n";
-	$_mpd_select['buffer_before_play'] .= "<option value=\"10%\" " . (($mpdconf['buffer_before_play'] == '10%') ? "selected" : "") . " >10%</option>\n";
-	$_mpd_select['buffer_before_play'] .= "<option value=\"20%\" " . (($mpdconf['buffer_before_play'] == '20%') ? "selected" : "") . " >20%</option>\n";
-	$_mpd_select['buffer_before_play'] .= "<option value=\"30%\" " . (($mpdconf['buffer_before_play'] == '30%') ? "selected" : "") . " >30%</option>\n";
-}
+// Log level
+$_mpd_select['log_level'] .= "<option value=\"default\" " . (($mpdconf['log_level'] == 'default') ? "selected" : "") . " >Default</option>\n";
+$_mpd_select['log_level'] .= "<option value=\"verbose\" " . (($mpdconf['log_level'] == 'verbose') ? "selected" : "") . " >Verbose</option>\n";
 
 /* DEPRECATE
 // hardware buffer time
@@ -202,6 +195,6 @@ $tpl = "mpd-config.html";
 $section = basename(__FILE__, '.php');
 storeBackLink($section, $tpl);
 
-include('/var/local/www/header.php');
+include('header.php');
 eval("echoTemplate(\"" . getTemplate("templates/$tpl") . "\");");
-include('footer.php');
+include('footer.min.php');

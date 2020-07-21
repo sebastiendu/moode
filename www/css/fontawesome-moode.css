@@ -2,7 +2,7 @@
  * Font Awesome Pro 5.0.10 by @fontawesome - https://fontawesome.com
  * License - https://fontawesome.com/license (Commercial License)
  *
- * 2019-09-05 TC moOde 6.2.0
+ * 2020-04-24 TC moOde 6.5.0
  *
  */
 .fa,
@@ -214,6 +214,9 @@ readers do not read off random characters that represent icons */
 .fa-arrow-up:before {
   content: "\f062"; }
 
+.fa-asterisk:before {
+  content: "\f069"; }
+
 .fa-backward:before {
   content: "\f04a"; }
 
@@ -369,6 +372,12 @@ readers do not read off random characters that represent icons */
 
 .fa-spinner:before {
   content: "\f110"; }
+
+.fa-step-backward:before {
+  content: "\f048"; }
+
+.fa-step-forward:before {
+  content: "\f051"; }
 
 .fa-stop:before {
   content: "\f04d"; }

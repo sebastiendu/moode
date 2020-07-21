@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * 2019-MM-DD TC moOde 6.4.1
+ * 2020-07-19 TC moOde 6.7.0
  *
  */
 
@@ -87,7 +87,7 @@ else {
 	if ($hwparams['status'] == 'active' || $_SESSION['audioout'] == 'Bluetooth') {
 		// DSD: DoP, Native bitstream
 		if ($status['audio_sample_depth'] == 'dsd64') {
-			$encoded_at = 'DSD64, 1 bit, 5.644 Mbps Stereo';
+			$encoded_at = 'DSD64, 1 bit, 2.822 Mbps Stereo';
 			if ($cfg_mpd['dop'] == 'yes') {
 				$decoded_to = 'DoP 24 bit 176.4 kHz, Stereo';
 				$decode_rate = '8.467 Mbps';
@@ -102,7 +102,7 @@ else {
 			}
 		}
 		else if ($status['audio_sample_depth'] == 'dsd128') {
-			$encoded_at = 'DSD128, 1 bit, 11.288 Mbps Stereo';
+			$encoded_at = 'DSD128, 1 bit, 5.644 Mbps Stereo';
 			if ($cfg_mpd['dop'] == 'yes') {
 				$decoded_to = 'DoP 24 bit 352.8 kHz, Stereo';
 				$decode_rate = '16.934 Mbps';
@@ -117,7 +117,7 @@ else {
 			}
 		}
 		else if ($status['audio_sample_depth'] == 'dsd256') {
-			$encoded_at = 'DSD256, 1 bit, 22.576 Mbps Stereo';
+			$encoded_at = 'DSD256, 1 bit, 11.288 Mbps Stereo';
 			if ($cfg_mpd['dop'] == 'yes') {
 				$decoded_to = 'DoP 24 bit 705.6 kHz, Stereo';
 				$decode_rate = '33.868 Mbps';
@@ -132,7 +132,7 @@ else {
 			}
 		}
 		else if ($status['audio_sample_depth'] == 'dsd512') {
-			$encoded_at = 'DSD512, 1 bit, 45.152 Mbps Stereo';
+			$encoded_at = 'DSD512, 1 bit, 22.576 Mbps Stereo';
 			if ($cfg_mpd['dop'] == 'yes') {
 				$decoded_to = 'DoP 24 bit 1.411 MHz, Stereo';
 				$decode_rate = '67.736 Mbps';
@@ -318,9 +318,18 @@ else {
 //
 
 $result = cfgdb_read('cfg_audiodev', $dbh, $_SESSION['adevname']);
-$devname = $_SESSION['adevname'];
-$dacchip = $result[0]['dacchip'];
-$iface = $result[0]['iface'];
+// Not in table implies USB audio device
+if ($result === true) {
+	$devname = 'USB audio device (' . $_SESSION['adevname'] . ')';
+	$dacchip = '';
+	$iface = 'USB';
+}
+else {
+	$devname = $_SESSION['adevname'];
+	$dacchip = $result[0]['dacchip'];
+	$iface = $result[0]['iface'];
+}
+$mixer_name = $_SESSION['amixname'];
 $audio_formats = $_SESSION['audio_formats'];
 $hdwr_rev = $_SESSION['hdwrrev'];
 

@@ -20,14 +20,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * 2019-08-08 TC moOde 6.0.0
+ * 2020-07-09 TC moOde 6.6.0
  *
  */
 
 set_include_path('/var/www/inc');
 require_once 'playerlib.php';
 
-define('FAKEFILE', '/var/www/images/nothingfound.jpg');
+define('NOT_FOUND', '/var/www/images/notfound.jpg');
 
 //
 // MAIN
@@ -41,7 +41,7 @@ $hires_thm = $_SESSION['library_hiresthm'];
 $pixel_ratio = floor($_SESSION['library_pixelratio']);
 session_write_close();
 
-// r44d auto vs manual
+// Automatic
 if ($hires_thm == 'Auto') {
 	if ($pixel_ratio == 2) {
 		$thm_w = 200;
@@ -56,8 +56,8 @@ if ($hires_thm == 'Auto') {
 		$thm_q = 75;
 	}
 }
+// Manual
 else {
-	// manual
 	$thm_w = substr($hires_thm, 0, 3); // only the numeric part ex: 100px
 	$thm_q = 75;
 }
@@ -68,50 +68,22 @@ else {
 //workerLog('thmcache: $thm_w=' . $thm_w);
 //workerLog('thmcache: $thm_q=' . $thm_q);
 
-// ensure cache dir exists
+// Ensure cache dir exists
 if (!file_exists(THMCACHE_DIR)) {
 	workerLog('thmcache: info: Missing thmcache dir, new one created');
 	sysCmd('mkdir ' . THMCACHE_DIR);
 }
 
-// get root list
-$sock = openMpdSock('localhost', 6600);
-sendMpdCmd($sock, 'lsinfo');
-$resp = readMpdResp($sock);
-$dirs = array();
-$line = strtok($resp, "\n");
-$i = 0;
+// List the dirs in /mnt and /media directories
+$mnt_dirs = str_replace("\n", ', ', shell_exec('ls /mnt'));
+$media_dirs = str_replace("\n", ', ', shell_exec('ls /media'));
+!empty($media_dirs) ? $dirs = $mnt_dirs . substr($media_dirs, 0, -2) : $dirs = substr($mnt_dirs, 0, -2);
+$dirs = str_replace('moode-player, ', '', $dirs); // This mount point is only present in dev
+workerLog('thmcache: Scanning: ' . $dirs);
 
-// use directories only, exclude RADIO
-while ($line) {
-	list($param, $value) = explode(': ', $line, 2);
-
-	if ($param == 'directory' && $value != 'RADIO') {
-		$dirs[$i] = $value;
-		$i++;
-	}
-
-	$line = strtok("\n");
-}
-
-// get file list
-$resp = '';
-foreach ($dirs as $dir) {
-	workerLog('thmcache: directory: ' . $dir);
-	sendMpdCmd($sock, 'listall "' . $dir . '"');
-	$resp .= readMpdResp($sock);
-}
-closeMpdSock($sock);
-
-/* Original
-// generate file list from MPD db
-$sock = openMpdSock('localhost', 6600);
-sendMpdCmd($sock, 'list file');
-$resp = readMpdResp($sock);
-closeMpdSock($sock);
-*/
-
-if (is_null($resp) || substr($resp, 0, 2) == 'OK') {
+// Generate the file list
+$result = shell_exec('/var/www/command/listall.sh | sort');
+if (is_null($result) || substr($result, 0, 2) == 'OK') {
 	workerLog('thmcache: exit: no files found');
 	session_start();
 	$_SESSION['thmcache_status'] = 'No files found';
@@ -119,34 +91,28 @@ if (is_null($resp) || substr($resp, 0, 2) == 'OK') {
 	exit(0);
 }
 
-// generate thumbnails
-// - compare the containing dir paths for file (file_a) and file+1 (file_b)
-// - when they are different we create a thumb using file_a and dir_a
+// Generate thumbnails
+// - Compare the containing dir paths for file (file_a) and file+1 (file_b)
+// - When they are different we create a thumb using file_a and dir_a
 $count = 0;
-$line = strtok($resp, "\n");
+$line = strtok($result, "\n");
 while ($line) {
-	if (strpos($line, 'directory:') === false) {
-		$file_a = explode(': ', $line, 2)[1];
-		$dir_a = dirname($file_a);
+	$file_a = explode(': ', $line, 2)[1];
+	$dir_a = dirname($file_a);
 
-		$line = strtok("\n");
+	$line = strtok("\n");
 
-		$file_b = explode(': ', $line, 2)[1];
-		$dir_b = dirname($file_b);
+	$file_b = explode(': ', $line, 2)[1];
+	$dir_b = dirname($file_b);
 
-		if ($dir_a != $dir_b) {
-			session_start();
-			$_SESSION['thmcache_status'] = 'Processing album ' . ++$count . ' ' . $dir_a;
-			session_write_close();
+	if ($dir_a != $dir_b) {
+		session_start();
+		$_SESSION['thmcache_status'] = 'Processing album ' . ++$count . ' ' . $dir_a;
+		session_write_close();
 
-			if (!file_exists(THMCACHE_DIR . md5($dir_a) . '.jpg')) {
-				createThumb($file_a, $dir_a, $search_pri, $thm_w, $thm_q);
-			}
+		if (!file_exists(THMCACHE_DIR . md5($dir_a) . '.jpg')) {
+			createThumb($file_a, $dir_a, $search_pri, $thm_w, $thm_q);
 		}
-	}
-	// skip directories
-	else {
-		$line = strtok("\n");
 	}
 }
 
@@ -155,61 +121,55 @@ $_SESSION['thmcache_status'] = 'Done: '  . $count . ' albums processed';
 session_write_close();
 workerLog('thmcache: Done: ' . $count . ' album dirs processed');
 
-// create thumbnail image
+// Create thumbnail image
 function createThumb($file, $dir, $search_pri, $thm_w, $thm_q) {
 	$path = MPD_MUSICROOT . $file;
-	$imgstr = false;
+	$img_str = false;
 	//workerlog('thmcache: path: ' . $path);
 
-	// file: embedded cover
-	if ($search_pri == 'Embedded cover') { // embedded first
-		$imgstr = getImage($path);
+	if ($search_pri == 'Embedded cover') {
+		// Check for embedded cover in file
+		$img_str = getImage($path);
 	}
 
-	if ($imgstr === false) {
-		if (is_dir($path)) {
-			// dir: cover image file
-			if (substr($path, -1) !== '/') {$path .= '/';}
-			$imgstr = parseFolder($path);
-		}
-		else {
-			// file: cover image file in containing dir
-			$dirpath = pathinfo($path, PATHINFO_DIRNAME) . '/';
-			$imgstr = parseFolder($dirpath);
-		}
+	if ($img_str === false) {
+		// Check for cover image file in containing dir
+		$dirpath = pathinfo($path, PATHINFO_DIRNAME) . '/';
+		$img_str = parseFolder($dirpath);
 
-		if ($imgstr === false) {
-			if ($search_pri == 'Cover image file') { // embedded last
-				$imgstr = getImage($path);
+		if ($img_str === false) {
+			if ($search_pri == 'Cover image file') {
+				// Check for embedded cover
+				$img_str = getImage($path);
 			}
 		}
 
-		if ($imgstr === false) {
-			// nothing found
-			$imgstr = FAKEFILE;
+		if ($img_str === false) {
+			// Nothing found
+			$img_str = NOT_FOUND;
 		}
 	}
 
-	// image file path, convert image to string
-	if (strlen($imgstr) < 256) {
-		$imgstr = file_get_contents($imgstr);
+	// Image file path, convert image to string
+	if (strlen($img_str) < 256) {
+		$img_str = file_get_contents($img_str);
 	}
 	else {
 		//workerlog('thmcache: embedded image');
 	}
 
-	$image = imagecreatefromstring($imgstr);
-	// image h/w
+	$image = imagecreatefromstring($img_str);
+	// Image h/w
 	$img_w = imagesx($image);
 	$img_h = imagesy($image);
-	// thumbnail height
+	// Thumbnail height
 	$thm_h = ($img_h / $img_w) * $thm_w;
 
 	if (($thumb = imagecreatetruecolor($thm_w, $thm_h)) === false) {
 		workerLog('thmcache: error 1: ' . $file);
 		return;
 	}
-	if ((imagecopyresampled($thumb, $image, 0, 0, 0, 0, $thm_w, $thm_h, $img_w, $img_h)) === false) {
+	if (imagecopyresampled($thumb, $image, 0, 0, 0, 0, $thm_w, $thm_h, $img_w, $img_h) === false) {
 		workerLog('thmcache: error 2: ' . $file);
 		return;
 	}
@@ -217,7 +177,7 @@ function createThumb($file, $dir, $search_pri, $thm_w, $thm_q) {
 		workerLog('thmcache: error 3: ' . $file);
 		return;
 	}
-	if ((imagejpeg($thumb, THMCACHE_DIR . md5($dir) . '.jpg', $thm_q) ) === false) {
+	if (imagejpeg($thumb, THMCACHE_DIR . md5($dir) . '.jpg', $thm_q) === false) {
 		workerLog('thmcache: error 4: ' . $file);
 		return;
 	}
@@ -227,7 +187,7 @@ function createThumb($file, $dir, $search_pri, $thm_w, $thm_q) {
 	}
 }
 
-// modified versions of coverart.php functions
+// Modified versions of coverart.php functions
 // (C) 2015 Andreas Goetz
 function outImage($mime, $data) {
 	//workerLog('thmcache: outImage(): ' . $mime . ', ' . strlen($data) . ' bytes');
@@ -257,7 +217,7 @@ function getImage($path) {
 	$ext = pathinfo($path, PATHINFO_EXTENSION);
 
 	switch (strtolower($ext)) {
-		// image file
+		// Image file
 		case 'gif':
 		case 'jpg':
 		case 'jpeg':
@@ -268,7 +228,7 @@ function getImage($path) {
 			$image = $path;
 			break;
 
-		// embedded images
+		// Embedded images
 		case 'mp3':
 			require_once 'Zend/Media/Id3v2.php';
 			try {
@@ -328,7 +288,7 @@ function getImage($path) {
 }
 function parseFolder($path) {
 	//workerLog('thmcache: parseFolder(): ' . $path);
-	// default cover files
+	// Default cover files
 	$covers = array(
 		'Cover.jpg', 'cover.jpg', 'Cover.jpeg', 'cover.jpeg', 'Cover.png', 'cover.png', 'Cover.tif', 'cover.tif', 'Cover.tiff', 'cover.tiff',
 		'Folder.jpg', 'folder.jpg', 'Folder.jpeg', 'folder.jpeg', 'Folder.png', 'folder.png', 'Folder.tif', 'folder.tif', 'Folder.tiff', 'folder.tiff'
@@ -341,7 +301,7 @@ function parseFolder($path) {
 	}
 
 	if ($result === false) { // r44a
-		// all other image files
+		// All other image files
 		$extensions = array('jpg', 'jpeg', 'png', 'tif', 'tiff');
 		$path = str_replace('[', '\[', $path);
 		$path = str_replace(']', '\]', $path);
